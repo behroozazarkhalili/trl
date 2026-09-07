@@ -1550,6 +1550,11 @@ class GRPOTrainer(_BaseTrainer):
                 mask = attention_mask_batch.bool()
                 completion_mask_batch = mask.clone()
                 completion_mask_batch[:, :-logits_to_keep] = False
+                if (mask.sum(dim=1) == completion_mask_batch.sum(dim=1)).any():
+                    raise ValueError(
+                        "`padding_free=True` needs at least one prompt token per sample: the first completion token "
+                        "of a sample without one has no predecessor in the packed row to take its logit from."
+                    )
                 keep_idx = completion_mask_batch[mask].nonzero(as_tuple=True)[0]
                 seq_lengths = mask.sum(dim=1).tolist()
                 model_inputs = {

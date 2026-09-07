@@ -5085,6 +5085,22 @@ class TestGRPOTrainerPaddingFree(TrlTestCase):
         logps.sum().backward()
         assert model.get_input_embeddings().weight.grad is not None
 
+    def test_padding_free_rejects_empty_prompt(self):
+        # A sample without a prompt token has no in-row predecessor for its first completion token
+        model = AutoModelForCausalLM.from_pretrained(
+            "trl-internal-testing/tiny-Qwen3ForCausalLM", attn_implementation="eager"
+        )
+        trainer = SimpleNamespace(
+            model_kwarg_keys=set(inspect.signature(model.forward).parameters),
+            temperature=1.0,
+            padding_free=True,
+            _entropy_bonus_enabled=False,
+        )
+        input_ids = torch.randint(5, 100, (2, 5))
+        attention_mask = torch.tensor([[0, 0, 1, 1, 1], [1, 1, 1, 1, 1]])
+        with pytest.raises(ValueError, match="at least one prompt token per sample"):
+            GRPOTrainer._get_per_token_logps_and_entropies(trainer, model, input_ids, attention_mask, 3, batch_size=2)
+
     def test_padding_free_requires_flash_attention(self):
         dataset = load_dataset("trl-internal-testing/zen", "standard_prompt_only", split="train")
         model = AutoModelForCausalLM.from_pretrained(
