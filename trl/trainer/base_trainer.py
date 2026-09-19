@@ -45,6 +45,7 @@ _TELEMETRY_TRAINERS = {
     "A2POTrainer",
     "AsyncDistillationTrainer",
     "AsyncGRPOTrainer",
+    "BPOTrainer",
     "CPOTrainer",
     "GKDTrainer",
     "GMPOTrainer",

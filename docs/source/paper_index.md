@@ -151,6 +151,34 @@ training_args = GMPOConfig(
 )
 ```
 
+### Bellman Policy Optimization
+
+**📜 Paper**: https://huggingface.co/papers/2609.15987
+
+Bellman Policy Optimization (BPO) derives a critic-free policy update from Policy Mirror Descent using the Bellman
+equations. It replaces GRPO's importance-sampling ratio with the smoothed mismatch-correction weight
+`(1 + epsilon - mu) / (1 + epsilon - pi)`, where `mu` and `pi` are rollout and current token probabilities.
+A sign-dependent mask and cap are applied to this weight, which is detached before multiplying `log pi`.
+TRL provides [`experimental.bpo.BPOTrainer`]; see [Experimental - BPO](bpo).
+
+The following configuration reproduces the paper's smoothing, cap, regularization, and sampling settings.
+BPO always uses the paper's sequence-mean/token-mean loss aggregation and inherits GRPO's group reward normalization.
+
+```python
+from trl.experimental.bpo import BPOConfig, BPOTrainer
+
+training_args = BPOConfig(
+    bpo_smoothing=0.1,  # "uses the default setting ϵ = 0.1 and C = 3.0" (Appendix B)
+    bpo_weight_cap=3.0,
+    beta=0.0,  # "We use no KL penalty"
+    entropy_coef=0.0,  # "the entropy bonus coefficient is zero"
+    temperature=1.0,  # "Training rollouts are sampled at temperature 1.0 and top-p = 1.0"
+    top_p=1.0,
+    top_k=0,  # "top-k filtering disabled"
+    # BPO's clipping bounds are not explicitly specified; retain the inherited epsilon/epsilon_high defaults.
+)
+```
+
 ### DAPO: An Open-Source LLM Reinforcement Learning System at Scale
 
 **📜 Paper**: https://huggingface.co/papers/2503.14476
