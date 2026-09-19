@@ -683,6 +683,36 @@ training_args = GRPOConfig(
 )
 ```
 
+## FlashREINFORCE
+
+Papers relating to [`experimental.flash_reinforce.FlashREINFORCETrainer`].
+
+### FlashREINFORCE: Critic-Free Single-Rollout Asynchronous RL for Agentic Language Models
+
+**📜 Paper**: September 2026 manuscript bundled with the [source repository](https://github.com/yifanzhang-pro/FlashREINFORCE). The supplied manuscript and repository do not provide an arXiv identifier, so a Hugging Face paper link is not yet available.
+
+FlashREINFORCE uses one rollout per prompt, rewards centered over the full update batch, and detached token importance ratios. It rejects a complete trajectory when the mean sampled-action Bernoulli KL from behavior to learner exceeds `delta`. Losses are averaged within each trajectory and then over the original batch. TRL implements the reference code's base objective and one-update batch lifecycle using inherited synchronous GRPO generation; it does not implement the paper's asynchronous rollout scheduler or optional failure-token entropy filtering. See [Experimental - FlashREINFORCE](flash_reinforce).
+
+```python
+from trl.experimental.flash_reinforce import FlashREINFORCEConfig, FlashREINFORCETrainer
+
+# Paper, Table 13 (Qwen2.5-Math); synchronous collection in this trainer.
+training_args = FlashREINFORCEConfig(
+    delta=3e-3,  # "Sequence threshold ... 3 × 10−3"
+    num_generations=1,  # "128 prompts; one rollout each"
+    num_iterations=1,  # "One full-batch step; no mini-batches or reuse"
+    per_device_train_batch_size=8,  # 128 trajectories per update on one device
+    gradient_accumulation_steps=16,
+    learning_rate=1e-6,  # "AdamW; lr 10−6; wd 0.1"
+    weight_decay=0.1,
+    lr_scheduler_type="cosine",  # "Cosine; gradient clip 1.0"
+    max_grad_norm=1.0,
+    max_completion_length=4096,  # "2,048 prompt; 4,096 response"
+    temperature=1.0,  # "Temperature 1.0; top-p = 1.0"
+    top_p=1.0,
+)
+```
+
 ## Optimal Advantage Regression
 
 Papers relating to the [`experimental.a2po.A2POTrainer`].

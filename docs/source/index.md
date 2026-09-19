@@ -55,6 +55,7 @@ Below is an overview of TRL trainers, organized by maturity and method type.
 
 - [`A2POTrainer`](a2po_trainer)
 - [`AsyncGRPOTrainer`](async_grpo_trainer)
+- [`FlashREINFORCETrainer`](flash_reinforce)
 - [`GMPOTrainer`](gmpo)
 - [GSPO-token](gspo_token)
 - [`OnlineDPOTrainer`](online_dpo_trainer)
